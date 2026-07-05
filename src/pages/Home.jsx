@@ -5,6 +5,8 @@ import Header from '../components/Header'
 import KissIcon from '../components/KissIcon'
 import { getDishImage, getCategoryEmoji } from '../lib/categoryIcons'
 
+const baseUrl = import.meta.env.BASE_URL || '/'
+
 const QUICK_ACTIONS = [
   { label: '菜单', emoji: '🍜', path: '/menu', color: '#FF6B35', bg: '#FFF0EB' },
   { label: '收藏', emoji: '⭐', path: '/favorites', color: '#FF8F5A', bg: '#FEF9C3' },
@@ -13,14 +15,14 @@ const QUICK_ACTIONS = [
 ]
 
 const CATEGORY_QUICK = [
-  { name: '川菜', icon: '/dish-images/icon-sichuan.png', taste: '麻辣', emoji: '🌶️', color: '#FA5151' },
-  { name: '粤菜', icon: '/dish-images/icon-cantonese.png', taste: '清鲜', emoji: '🦐', color: '#EA580C' },
-  { name: '湘菜', icon: '/dish-images/icon-hunan.png', taste: '香辣', emoji: '🌶️', color: '#CA8A04' },
-  { name: '鲁菜', icon: '/dish-images/icon-shandong.png', taste: '咸鲜', emoji: '🍖', color: '#7C2D12' },
-  { name: '苏菜', icon: '/dish-images/icon-jiangsu.png', taste: '甜鲜', emoji: '🦀', color: '#0891B2' },
-  { name: '浙菜', icon: '/dish-images/icon-zhejiang.png', taste: '鲜嫩', emoji: '🐟', color: '#059669' },
-  { name: '闽菜', icon: '/dish-images/icon-fujian.png', taste: '汤鲜', emoji: '🍲', color: '#7C3AED' },
-  { name: '徽菜', icon: '/dish-images/icon-anhui.png', taste: '醇厚', emoji: '🍄', color: '#BE185D' },
+  { name: '川菜', icon: `${baseUrl}dish-images/icon-sichuan.png`, taste: '麻辣', emoji: '🌶️', color: '#FA5151' },
+  { name: '粤菜', icon: `${baseUrl}dish-images/icon-cantonese.png`, taste: '清鲜', emoji: '🦐', color: '#EA580C' },
+  { name: '湘菜', icon: `${baseUrl}dish-images/icon-hunan.png`, taste: '香辣', emoji: '🌶️', color: '#CA8A04' },
+  { name: '鲁菜', icon: `${baseUrl}dish-images/icon-shandong.png`, taste: '咸鲜', emoji: '🍖', color: '#7C2D12' },
+  { name: '苏菜', icon: `${baseUrl}dish-images/icon-jiangsu.png`, taste: '甜鲜', emoji: '🦀', color: '#0891B2' },
+  { name: '浙菜', icon: `${baseUrl}dish-images/icon-zhejiang.png`, taste: '鲜嫩', emoji: '🐟', color: '#059669' },
+  { name: '闽菜', icon: `${baseUrl}dish-images/icon-fujian.png`, taste: '汤鲜', emoji: '🍲', color: '#7C3AED' },
+  { name: '徽菜', icon: `${baseUrl}dish-images/icon-anhui.png`, taste: '醇厚', emoji: '🍄', color: '#BE185D' },
 ]
 
 const MOTIVATIONS = [

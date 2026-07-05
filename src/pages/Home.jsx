@@ -8,10 +8,10 @@ import { getDishImage, getCategoryEmoji } from '../lib/categoryIcons'
 const baseUrl = import.meta.env.BASE_URL || '/'
 
 const QUICK_ACTIONS = [
-  { label: '菜单', emoji: '🍜', path: '/menu', color: '#FF6B35', bg: '#FFF0EB' },
-  { label: '收藏', emoji: '⭐', path: '/favorites', color: '#FF8F5A', bg: '#FEF9C3' },
-  { label: '订单', emoji: '📋', path: '/orders', color: '#E55A2B', bg: '#FFF0EB' },
-  { label: '我的', emoji: '👤', path: '/profile', color: '#666666', bg: '#F5F5F4' },
+  { label: '点单', emoji: '🍜', path: '/menu', color: '#FF6B35', bg: '#FFF0EB' },
+  { label: '心动', emoji: '💖', path: '/favorites', color: '#FF8F5A', bg: '#FEF9C3' },
+  { label: '订单', emoji: '🧾', path: '/orders', color: '#E55A2B', bg: '#FFF0EB' },
+  { label: '我的', emoji: '🐰', path: '/profile', color: '#666666', bg: '#F5F5F4' },
 ]
 
 const CATEGORY_QUICK = [
@@ -26,16 +26,44 @@ const CATEGORY_QUICK = [
 ]
 
 const MOTIVATIONS = [
-  '吃饱了才有力气减肥~', '今天也要好好吃饭呀', '唯有美食与爱不可辜负',
-  '吃好喝好，长生不老', '人生苦短，再来一碗', '肚子饱了，心情就好了',
+  '今天的你和美食都很甜呀～', '喂饱自己，才有力气拥抱世界呀',
+  '恋爱可以慢慢谈，饭要趁热吃噢～', '不吃饭的女孩子会变成小怪兽的！',
+  '这一口，是给自己最好的奖励～', '心情不好的时候，就让胃先快乐起来吧',
+  '今日宜：好好吃饭、好好生活～', '是甜食先动的手，不是我先嘴馋的！',
+  '比奶茶更甜的，是此刻想吃啥就吃啥的你～', '吃饱饱，没烦恼，今天也辛苦啦',
+  '本可爱决定先爱自己，从这顿饭开始~', '别人是充电五分钟，我是吃饭两小时',
+  '对全世界温柔，不如对自己好一点呀', '今天的我：吃饭第一名，减肥明天再说',
+  '想和你一起，把烟火气吃进肚子里～', '有你的饭桌，每一顿都是小确幸',
+  '今天的快乐是食物给的，感谢每一口～', '一个胃装得下所有想吃的东西耶！',
+  '女孩子要吃甜甜的才会有好心情呀', '好好吃饭就是头等大事，不接受反驳！',
 ]
 
 function getGreeting() {
   const hour = new Date().getHours()
-  if (hour < 11) return '早上好'
-  if (hour < 14) return '中午好'
-  if (hour < 18) return '下午好'
-  return '晚上好'
+  if (hour < 9) return '早安呀'
+  if (hour < 11) return '早上好呀'
+  if (hour < 14) return '中午好呀'
+  if (hour < 17) return '下午好呀'
+  if (hour < 19) return '傍晚好呀'
+  if (hour < 22) return '晚上好呀'
+  return '夜深啦'
+}
+
+function getGreetingEmoji() {
+  const hour = new Date().getHours()
+  if (hour < 9) return '🌅'
+  if (hour < 11) return '☀️'
+  if (hour < 14) return '🍱'
+  if (hour < 17) return '☕'
+  if (hour < 19) return '🌇'
+  if (hour < 22) return '🌙'
+  return '✨'
+}
+
+const NICKNAMES = ['小可爱', '小宝贝', '小甜心', '宝儿', '宝子', '我家小朋友', '小馋猫', '甜妹', '小仙女', '公主殿下']
+function getNickname() {
+  const day = new Date().getDate()
+  return NICKNAMES[day % NICKNAMES.length]
 }
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
@@ -69,7 +97,19 @@ export default function Home() {
 
   return (
     <div>
-      <Header title={`${getGreeting()}，今天吃什么？`} subtitle={motivation} />
+      <Header
+        title={
+          <span className="flex items-center gap-1.5">
+            <motion.span
+              animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.15, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
+              className="inline-block text-2xl"
+            >{getGreetingEmoji()}</motion.span>
+            <span>{getGreeting()}，{getNickname()}～</span>
+          </span>
+        }
+        subtitle={motivation}
+      />
 
       <div className="px-4 pb-4 space-y-5">
         {/* 3D 轮播 Banner */}
@@ -91,9 +131,9 @@ export default function Home() {
                     <img src={banners[bannerIndex].image_url} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="text-center p-6">
-                      <div className="text-6xl mb-2">{['🔥', '✨', '🍽️'][bannerIndex]}</div>
+                      <div className="text-6xl mb-2">{['💖', '✨', '🍽️'][bannerIndex]}</div>
                       <p className="text-lg font-bold text-[var(--color-text)]">{banners[bannerIndex]?.name}</p>
-                      <p className="text-sm text-[var(--color-text-secondary)] mt-1">{banners[bannerIndex]?.description || '今日特推，不容错过~'}</p>
+                      <p className="text-sm text-[var(--color-text-secondary)] mt-1">{banners[bannerIndex]?.description || '心动预警，请捂好小钱包～'}</p>
                     </div>
                   )}
                 </div>
@@ -106,6 +146,28 @@ export default function Home() {
             </AnimatePresence>
           </div>
         )}
+
+        {/* 今日甜蜜小贴士 */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="d3-card-face p-3 flex items-center gap-2.5"
+          style={{
+            background: 'linear-gradient(135deg, #FFF5F8 0%, #FFEDF4 50%, #FFF0EB 100%)',
+            borderColor: '#FFB8D1',
+          }}
+        >
+          <motion.span
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 1.2, repeat: Infinity }}
+            className="text-xl shrink-0"
+          >💝</motion.span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold" style={{ color: '#E91E63' }}>今日份的小提醒</p>
+            <p className="text-[11px] text-[var(--color-text-secondary)] mt-0.5">{SWEET_TIPS[new Date().getDate() % SWEET_TIPS.length]}</p>
+          </div>
+        </motion.div>
 
         {/* 快捷入口 */}
         <motion.div className="grid grid-cols-4 gap-3" variants={container} initial="hidden" animate="show">
@@ -132,8 +194,11 @@ export default function Home() {
         {/* 八大菜系快捷入口 */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>八大菜系</h2>
-            <button onClick={() => navigate('/menu')} className="text-xs text-[var(--color-primary)] font-bold">全部 →</button>
+            <div className="flex items-baseline gap-1.5">
+              <h2 className="text-base font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>八大菜系</h2>
+              <span className="text-[10px] text-[var(--color-text-tertiary)]">每一口都是远方～</span>
+            </div>
+            <button onClick={() => navigate('/menu')} className="text-xs text-[var(--color-primary)] font-bold">逛逛 →</button>
           </div>
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
             {CATEGORY_QUICK.map((cat, i) => (
@@ -165,8 +230,8 @@ export default function Home() {
         {/* 为你推荐 */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>为你推荐</h2>
-            <button onClick={() => navigate('/menu')} className="text-xs text-[var(--color-primary)] font-bold">查看更多</button>
+            <h2 className="text-base font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>猜你想吃 <span className="text-xs text-[var(--color-primary)] ml-0.5">💗</span></h2>
+            <button onClick={() => navigate('/menu')} className="text-xs text-[var(--color-primary)] font-bold">看更多 →</button>
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
             {recommendDishes.map((dish, i) => (
@@ -199,7 +264,7 @@ export default function Home() {
         {popularDishes.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>🔥 大家爱吃</h2>
+              <h2 className="text-base font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>吃货都在抢 🍴</h2>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {popularDishes.slice(0, 4).map((dish, i) => (
@@ -232,8 +297,8 @@ export default function Home() {
         {recentOrders.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>最近订单</h2>
-              <button onClick={() => navigate('/orders')} className="text-xs text-[var(--color-primary)] font-bold">全部</button>
+              <h2 className="text-base font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>你最近点的 🧾</h2>
+              <button onClick={() => navigate('/orders')} className="text-xs text-[var(--color-primary)] font-bold">看全部 →</button>
             </div>
             <div className="space-y-2.5">
               {recentOrders.map((order, i) => (

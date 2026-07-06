@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../components/CartContext'
+import LovePrice, { LoveTotal } from '../components/LovePrice'
 import Header from '../components/Header'
 import KissIcon from '../components/KissIcon'
 import { getDishImage } from '../lib/categoryIcons'
@@ -128,7 +129,7 @@ export default function Cart() {
                   <h3 className="font-semibold text-[14px] text-[var(--color-text)] truncate" style={{ fontFamily: 'Fredoka, sans-serif' }}>{item.name}</h3>
                   <div className="flex items-center gap-1 mt-0.5">
                     <KissIcon className="w-3 h-3 text-[var(--color-secondary)]" />
-                    <span className="text-[13px] font-bold text-[var(--color-primary)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>{item.price}</span>
+                    <LovePrice price={item.price} size="sm" />
                   </div>
                 </div>
                 {/* 数量控制器 - 按钮增大到 34px */}

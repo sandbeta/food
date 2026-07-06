@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useCart } from '../components/CartContext'
+import LovePrice, { LoveTotal } from '../components/LovePrice'
 import Header from '../components/Header'
 import KissIcon from '../components/KissIcon'
 import { getDishImage } from '../lib/categoryIcons'
@@ -69,7 +70,7 @@ export default function Checkout() {
             <span className="text-sm font-bold text-[var(--color-text)]">×{item.quantity}</span>
             <div className="flex items-center gap-1">
               <KissIcon className="w-3 h-3 text-[var(--color-secondary)]" />
-              <span className="text-sm font-bold text-[var(--color-primary)]">{item.price * item.quantity}</span>
+              <LovePrice price={Math.round(item.price * item.quantity * 100) / 100} size="sm" />
             </div>
           </motion.div>
         ))}
@@ -99,7 +100,7 @@ export default function Checkout() {
             <span className="text-[var(--color-text-secondary)] font-bold">合计</span>
             <div className="flex items-center gap-1">
               <KissIcon className="w-5 h-5 text-[var(--color-secondary)]" />
-              <span className="text-[26px] font-bold text-[var(--color-primary)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>{totalPrice}</span>
+              <LoveTotal total={totalPrice} label="这一顿" />
             </div>
           </div>
           <motion.button whileTap={{ scale: 0.97, y: 2 }} whileHover={{ y: -1 }}

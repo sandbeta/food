@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Header from '../components/Header'
 import KissIcon from '../components/KissIcon'
+import LovePrice from '../components/LovePrice'
 import { getDishImage, getCategoryEmoji } from '../lib/categoryIcons'
 
 const baseUrl = import.meta.env.BASE_URL || '/'
@@ -265,8 +266,7 @@ export default function Home() {
                 </div>
                 <p className="text-xs font-bold text-[var(--color-text)] truncate">{dish.name}</p>
                 <div className="flex items-center gap-1 mt-0.5">
-                  <KissIcon className="w-3 h-3 text-[var(--color-secondary)]" />
-                  <span className="text-xs font-bold text-[var(--color-primary)]">{dish.price}</span>
+                  <LovePrice price={dish.price} size="sm" />
                 </div>
               </motion.div>
             ))}
@@ -296,8 +296,7 @@ export default function Home() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-[var(--color-text)] truncate">{dish.name}</p>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <KissIcon className="w-2.5 h-2.5 text-[var(--color-secondary)]" />
-                      <span className="text-xs font-bold text-[var(--color-primary)]">{dish.price}</span>
+                      <LovePrice price={dish.price} size="sm" />
                     </div>
                   </div>
                 </motion.div>

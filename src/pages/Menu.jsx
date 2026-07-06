@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../components/CartContext'
 import Header from '../components/Header'
 import KissIcon from '../components/KissIcon'
+import LovePrice from '../components/LovePrice'
 import { getDishImage, getCategoryEmoji } from '../lib/categoryIcons'
 import { getDishRecipe } from '../lib/dishRecipes'
 
@@ -96,7 +97,7 @@ function RecommendCard({ dishes, onAdd, spawnParticle }) {
           <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 line-clamp-1">{randomDish.description || '好吃的~'}</p>
           <div className="flex items-center gap-1 mt-1.5">
             <KissIcon className="w-3.5 h-3.5 text-[var(--color-secondary)]" />
-            <span className="text-[15px] font-extrabold text-[var(--color-primary)]">{randomDish.price}</span>
+            <LovePrice price={randomDish.price} size="lg" showLabel />
           </div>
         </div>
         <motion.button whileTap={{ scale: 0.92 }} whileHover={{ scale: 1.04 }} onClick={(e) => {
@@ -367,7 +368,7 @@ export default function Menu() {
                     <div className="flex items-center justify-between mt-2.5">
                       <div className="flex items-center gap-1">
                         <KissIcon className="w-3.5 h-3.5 text-[var(--color-secondary)]" />
-                        <span className="text-[18px] font-extrabold text-[var(--color-primary)] leading-tight">{dish.price}</span>
+                        <LovePrice price={dish.price} size="xl" showLabel />
                       </div>
                       <motion.button whileTap={{ scale: 0.82 }} whileHover={{ scale: 1.08 }} onClick={(e) => {
                         e.stopPropagation()

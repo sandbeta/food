@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../components/CartContext'
+import LovePrice from '../components/LovePrice'
 import Header from '../components/Header'
 import KissIcon from '../components/KissIcon'
 import { getDishImage, getCategoryEmoji } from '../lib/categoryIcons'
@@ -63,7 +64,7 @@ export default function DishDetail() {
           <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">{dish.description || '一道美味的菜品~'}</p>
           <div className="flex items-center gap-1.5 mt-3">
             <KissIcon className="w-5 h-5 text-[var(--color-secondary)]" />
-            <span className="text-2xl font-bold text-[var(--color-primary)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>{dish.price}</span>
+            <LovePrice price={dish.price} size="2xl" showLabel />
           </div>
         </motion.div>
 

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../components/CartContext'
 import LovePrice from '../components/LovePrice'
+import DishImage from '../components/DishImage'
 import { getCategoryEmoji } from '../lib/categoryIcons'
 import { getDishRecipe } from '../lib/dishRecipes'
 
@@ -82,7 +83,6 @@ export default function DishDetail() {
   const [recipeOpen, setRecipeOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState({ visible: false, message: '', type: 'success' })
-  const [imageError, setImageError] = useState(false)
 
   useEffect(() => {
     fetch('/api/dishes/all')
@@ -173,16 +173,7 @@ export default function DishDetail() {
             overflow: 'hidden', marginBottom: 14, position: 'relative',
           }}
         >
-          {dish.image_url && !imageError ? (
-            <img
-              src={`${baseUrl}${dish.image_url}`}
-              alt={dish.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <span style={{ fontSize: 80 }}>{getCategoryEmoji(dish.category)}</span>
-          )}
+          <DishImage dish={dish} size={'100%'} radius={24} style={{ width: '100%', height: '100%' }} />
         </motion.div>
 
         {/* ═══ Dish Info ═══ */}

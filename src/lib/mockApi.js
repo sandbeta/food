@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'couple_order_app_state_v2'
+const STORAGE_KEY = 'couple_order_app_state_v3'
 const baseUrl = import.meta.env.BASE_URL || '/'
 
 const defaultCategories = ['全部', '家常菜', '硬菜', '素菜', '主食', '小吃', '水果', '饮品', '汤类', '川菜', '粤菜', '湘菜', '鲁菜', '苏菜', '浙菜', '闽菜', '徽菜', '东北菜', '西北菜', '云贵菜', '其他']
@@ -93,6 +93,20 @@ const seedDishes = [
   { id: 65, name: '折耳根炒腊肉', price: 32, category: '云贵菜', description: '独特香气，越吃越上头', available: 1, image_url: `${baseUrl}dish-images/dish-65.png` },
 ]
 
+// Build a lookup table from seed dish id/name to canonical image_url
+const seedImageMap = Object.fromEntries(seedDishes.map(d => [String(d.id), d.image_url]))
+const seedNameMap = Object.fromEntries(seedDishes.map(d => [d.name, d.image_url]))
+
+function normalizeDishImage(dish) {
+  // If the dish matches a known seed dish by id or name, ensure it gets the correct image URL
+  if (!dish || (!dish.image_url && !seedImageMap[dish.id] && !seedNameMap[dish.name])) return dish
+  const canonical = seedImageMap[String(dish.id)] || seedNameMap[dish.name]
+  if (canonical) {
+    return { ...dish, image_url: canonical }
+  }
+  return dish
+}
+
 function loadState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -105,10 +119,12 @@ function loadState() {
         state.nextDishId = Math.max(Number(state.nextDishId || 1), ...state.dishes.map(d => Number(d.id || 0))) + 1
         saveState(state)
       }
+      // Ensure seed dishes always point to the current correct image URLs (e.g. after base path changes)
+      state.dishes = (state.dishes || []).map(normalizeDishImage)
       return state
     }
   } catch {}
-  return { dishes: seedDishes, orders: [], nextDishId: 66, nextOrderId: 1001 }
+  return { dishes: seedDishes.map(normalizeDishImage), orders: [], nextDishId: 66, nextOrderId: 1001 }
 }
 
 function saveState(state) {

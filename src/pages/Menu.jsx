@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../components/CartContext'
 import LovePrice from '../components/LovePrice'
+import DishImage from '../components/DishImage'
 import { getCategoryEmoji } from '../lib/categoryIcons'
 import { getDishRecipe } from '../lib/dishRecipes'
 
@@ -528,32 +529,7 @@ export default function Menu() {
                   }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px' }}>
                     {/* Dish Image */}
-                    <div style={{
-                      width: 64, height: 64, borderRadius: 18, flexShrink: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      overflow: 'hidden', position: 'relative',
-                      background: `linear-gradient(145deg, ${cfg.color}10, #FFFFFF 50%, ${cfg.color}05)`,
-                      boxShadow: `inset 0 2px 6px ${cfg.color}08, 0 4px 10px ${cfg.color}10`,
-                    }}>
-                      {dish.image_url ? (
-                        <img
-                          src={`${baseUrl}${dish.image_url}`}
-                          alt={dish.name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          onError={(e) => {
-                            e.target.style.display = 'none'
-                            e.target.parentElement.style.background = `linear-gradient(145deg, ${cfg.color}10, #FFFFFF 50%, ${cfg.color}05)`
-                            const span = document.createElement('span')
-                            span.style.fontSize = '28px'
-                            span.textContent = cfg.emoji
-                            e.target.parentElement.appendChild(span)
-                          }}
-                          loading="lazy"
-                        />
-                      ) : (
-                        <span style={{ fontSize: 28 }}>{cfg.emoji}</span>
-                      )}
-                    </div>
+                    <DishImage dish={dish} size={64} radius={18} />
                     {/* Dish Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

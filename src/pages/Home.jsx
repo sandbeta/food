@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../components/CartContext'
 import { getCategoryEmoji } from '../lib/categoryIcons'
 import LovePrice, { getSweetLabel } from '../components/LovePrice'
+import DishImage from '../components/DishImage'
 
 const baseUrl = import.meta.env.BASE_URL || '/'
 
@@ -241,15 +242,7 @@ export default function Home() {
             onClick={() => navigate(`/dish/${heroDish.id}`)}
           >
             {/* Dish Image */}
-            <div className="shrink-0" style={{ width: 88, height: 88, borderRadius: 16, overflow: 'hidden', position: 'relative' }}>
-              <img
-                src={`${baseUrl}${heroDish.image_url}`}
-                alt={heroDish.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.classList.add('img-fallback') }}
-                loading="lazy"
-              />
-            </div>
+            <DishImage dish={heroDish} size={88} radius={16} />
             {/* Info */}
             <div className="flex-1 min-w-0">
               <span className="tag" style={{ fontSize: 10, marginBottom: 4, display: 'inline-block' }}>
@@ -302,13 +295,14 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.22 + i * 0.03 }}
             >
-              <img
-                src={`${baseUrl}dish-images/${cat.icon}.png`}
-                alt={cat.label}
-                style={{ width: 32, height: 32, objectFit: 'contain' }}
-                onError={(e) => { e.target.style.display = 'none' }}
-                loading="lazy"
-              />
+              <div style={{
+                width: 40, height: 40, borderRadius: 14,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4))',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.03)',
+              }}>
+                <span style={{ fontSize: 22 }}>{getCategoryEmoji(cat.key)}</span>
+              </div>
               <span className="t-tiny" style={{ fontWeight: 600 }}>{cat.label}</span>
               <span className="t-tiny" style={{ fontSize: 9, opacity: 0.7 }}>{cat.taste}</span>
             </motion.button>
@@ -345,13 +339,7 @@ export default function Home() {
               transition={{ delay: 0.26 + i * 0.04 }}
             >
               <div style={{ width: 140, height: 100, overflow: 'hidden', position: 'relative' }}>
-                <img
-                  src={`${baseUrl}${dish.image_url}`}
-                  alt={dish.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.classList.add('img-fallback') }}
-                  loading="lazy"
-                />
+                <DishImage dish={dish} size={140} radius={0} style={{ width: '100%', height: '100%', borderRadius: 0 }} />
                 <div className="tag" style={{
                   position: 'absolute', top: 6, left: 6, fontSize: 10,
                   background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', backdropFilter: 'blur(4px)'
@@ -393,13 +381,7 @@ export default function Home() {
               transition={{ delay: 0.31 + i * 0.04 }}
             >
               <div style={{ width: '100%', aspectRatio: '4/3', overflow: 'hidden', position: 'relative' }}>
-                <img
-                  src={`${baseUrl}${dish.image_url}`}
-                  alt={dish.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.classList.add('img-fallback') }}
-                  loading="lazy"
-                />
+                <DishImage dish={dish} size={'100%'} radius={0} style={{ width: '100%', height: '100%', borderRadius: 0 }} />
               </div>
               <div className="p-2.5">
                 <p className="t-body" style={{ fontWeight: 600, lineHeight: 1.3 }}>{dish.name}</p>

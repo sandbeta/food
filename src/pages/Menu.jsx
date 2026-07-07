@@ -1,51 +1,107 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../components/CartContext'
-import Header from '../components/Header'
-import KissIcon from '../components/KissIcon'
 import LovePrice from '../components/LovePrice'
-import { getDishImage, getCategoryEmoji } from '../lib/categoryIcons'
+import { getCategoryEmoji } from '../lib/categoryIcons'
 import { getDishRecipe } from '../lib/dishRecipes'
 
+const baseUrl = import.meta.env.BASE_URL || '/'
+
+/* ══════════════════════════════════════════
+   CONSTANTS
+   ══════════════════════════════════════════ */
+
 const CATEGORY_CONFIG = {
-  '全部': { emoji: '✨', light: '#FFF1E5', color: '#FF6B35' },
-  '家常菜': { emoji: '🍳', light: '#FFF0E7', color: '#F0A860' },
-  '硬菜': { emoji: '🥩', light: '#FFE8EC', color: '#FA5151' },
-  '素菜': { emoji: '🥬', light: '#EAF7E7', color: '#6BBF5C' },
-  '主食': { emoji: '🍚', light: '#FFF7D7', color: '#E8C84A' },
-  '小吃': { emoji: '🍢', light: '#F4E9FF', color: '#A06CD5' },
-  '水果': { emoji: '🍎', light: '#FFE9EF', color: '#F47A92' },
-  '饮品': { emoji: '🧋', light: '#E5F7FA', color: '#4AB8C8' },
-  '汤类': { emoji: '🍲', light: '#FFF0E7', color: '#E8A050' },
-  '川菜': { emoji: '🌶️', light: '#FFE3DC', color: '#E85040' },
-  '粤菜': { emoji: '🥢', light: '#FFF1D8', color: '#E8C060' },
-  '湘菜': { emoji: '🔥', light: '#FFE7D6', color: '#E88040' },
-  '鲁菜': { emoji: '🍤', light: '#FFECD1', color: '#D09050' },
-  '苏菜': { emoji: '🪷', light: '#F2E9FF', color: '#9070C8' },
-  '浙菜': { emoji: '🐟', light: '#E5F7FA', color: '#50A8B8' },
-  '闽菜': { emoji: '🦐', light: '#E6F5FF', color: '#5898D0' },
-  '徽菜': { emoji: '🍲', light: '#EFE6DC', color: '#A08060' },
-  '东北菜': { emoji: '🥟', light: '#F0F6E8', color: '#80A858' },
-  '西北菜': { emoji: '🍖', light: '#FFF0D8', color: '#C89848' },
-  '云贵菜': { emoji: '🍄', light: '#EAF7E7', color: '#6BBF5C' },
-  '其他': { emoji: '🍽️', light: '#F5F5F5', color: '#A0A0A0' },
+  '全部': { emoji: '✨', color: '#FF6B35' },
+  '家常菜': { emoji: '🍳', color: '#F0A860' },
+  '硬菜': { emoji: '🥩', color: '#FA5151' },
+  '素菜': { emoji: '🥬', color: '#6BBF5C' },
+  '主食': { emoji: '🍚', color: '#E8C84A' },
+  '小吃': { emoji: '🍢', color: '#A06CD5' },
+  '水果': { emoji: '🍎', color: '#F47A92' },
+  '饮品': { emoji: '🧋', color: '#4AB8C8' },
+  '汤类': { emoji: '🍲', color: '#E8A050' },
+  '川菜': { emoji: '🌶️', color: '#E85040' },
+  '粤菜': { emoji: '🥢', color: '#E8C060' },
+  '湘菜': { emoji: '🔥', color: '#E88040' },
+  '鲁菜': { emoji: '🍤', color: '#D09050' },
+  '苏菜': { emoji: '🪷', color: '#9070C8' },
+  '浙菜': { emoji: '🐟', color: '#50A8B8' },
+  '闽菜': { emoji: '🦐', color: '#5898D0' },
+  '徽菜': { emoji: '🍲', color: '#A08060' },
+  '东北菜': { emoji: '🥟', color: '#80A858' },
+  '西北菜': { emoji: '🍖', color: '#C89848' },
+  '云贵菜': { emoji: '🍄', color: '#6BBF5C' },
+  '其他': { emoji: '🍽️', color: '#A0A0A0' },
 }
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.045 } } }
-const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0 } }
+const CATEGORY_GROUPS = [
+  { label: '家常', items: ['全部', '家常菜', '硬菜', '素菜', '主食', '小吃', '水果', '饮品', '汤类'] },
+  { label: '八大菜系', items: ['川菜', '粤菜', '湘菜', '鲁菜', '苏菜', '浙菜', '闽菜', '徽菜'] },
+  { label: '地方风味', items: ['东北菜', '西北菜', '云贵菜', '其他'] },
+]
+
+/* ══════════════════════════════════════════
+   Skeleton — Loading State
+   ══════════════════════════════════════════ */
+
+function MenuSkeleton() {
+  return (
+    <div className="page-container-tight">
+      <div className="glass-card p-3 flex items-center gap-3 mb-4">
+        <div className="skeleton" style={{ width: 70, height: 70, borderRadius: 18, flexShrink: 0 }} />
+        <div style={{ flex: 1 }}>
+          <div className="skeleton skeleton-title" style={{ marginBottom: 8 }} />
+          <div className="skeleton skeleton-text" style={{ width: '40%' }} />
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+        {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="skeleton skeleton-badge" style={{ width: 56 }} />)}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[1,2,3,4].map(i => (
+          <div key={i} className="glass-card p-3 flex items-center gap-3">
+            <div className="skeleton" style={{ width: 70, height: 70, borderRadius: 18, flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <div className="skeleton skeleton-text" style={{ width: '55%', marginBottom: 8 }} />
+              <div className="skeleton skeleton-text" style={{ width: '35%', marginBottom: 6 }} />
+              <div className="skeleton skeleton-text" style={{ width: '25%' }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════
+   WhoSelector
+   ══════════════════════════════════════════ */
 
 function WhoSelector({ whoAmI, setWhoAmI }) {
   return (
-    <div className="d3-card-face p-1.5 flex items-center gap-1.5 mb-4">
-      <span className="pl-2 pr-1 text-xs text-[var(--color-text-secondary)] font-bold">给谁点</span>
+    <div className="glass-card p-1 flex items-center gap-1 mb-3" style={{ borderRadius: 16 }}>
+      <span className="t-caption" style={{ paddingLeft: 10, paddingRight: 4, fontWeight: 600 }}>给谁点</span>
       {[{ value: 'me', label: '自己', icon: '🐱' }, { value: 'partner', label: 'TA', icon: '🐰' }].map(opt => (
-        <motion.button key={opt.value} whileTap={{ scale: 0.95 }} onClick={() => setWhoAmI(opt.value)}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl text-sm font-bold transition-all duration-300 ease-out ${whoAmI === opt.value ? (opt.value === 'me' ? 'avatar-me glow-primary' : 'avatar-partner') : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-cream)]'}`}
-          animate={whoAmI === opt.value ? { scale: 1.02 } : { scale: 1 }}>
-          <motion.span className="w-5 h-5 rounded-full bg-[#FFF8F2]/30 flex items-center justify-center text-[10px]"
-            animate={whoAmI === opt.value ? { rotate: [0, -8, 8, 0] } : { rotate: 0 }}
-            transition={{ duration: 0.5 }}>{opt.icon}</motion.span>
+        <motion.button
+          key={opt.value}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setWhoAmI(opt.value)}
+          className="btn btn-sm flex-1"
+          style={{
+            minHeight: 36,
+            borderRadius: 12,
+            fontWeight: 700,
+            fontSize: 13,
+            background: whoAmI === opt.value
+              ? (opt.value === 'me' ? 'linear-gradient(135deg, #FF8F5A, #FF6B35)' : 'linear-gradient(135deg, #576B95, #567BB5)')
+              : 'transparent',
+            color: whoAmI === opt.value ? 'white' : 'var(--color-text-secondary)',
+            boxShadow: whoAmI === opt.value ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+          }}
+        >
+          <span>{opt.icon}</span>
           {opt.label}
         </motion.button>
       ))}
@@ -53,9 +109,13 @@ function WhoSelector({ whoAmI, setWhoAmI }) {
   )
 }
 
+/* ══════════════════════════════════════════
+   RecommendCard
+   ══════════════════════════════════════════ */
+
 function RecommendCard({ dishes, onAdd, spawnParticle }) {
   const randomDish = useMemo(() => {
-    if (dishes.length === 0) return null
+    if (!dishes.length) return null
     return dishes[Math.floor(Math.random() * dishes.length)]
   }, [dishes])
 
@@ -63,50 +123,64 @@ function RecommendCard({ dishes, onAdd, spawnParticle }) {
   const cfg = CATEGORY_CONFIG[randomDish.category] || CATEGORY_CONFIG['其他']
 
   return (
-    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
-      className="d3-card-face p-4 mb-4 overflow-hidden relative"
-      style={{
-        background: `linear-gradient(135deg, ${cfg.light} 0%, rgba(255,255,255,.95) 100%)`,
-          borderColor: `${cfg.color}30`,
-      }}>
-      {/* 多个模糊圆形装饰元素 */}
-      <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full animate-float-gentle"
-        style={{ background: `radial-gradient(circle, ${cfg.color}20, transparent 70%)` }} />
-      <div className="absolute -left-6 -bottom-6 w-20 h-20 rounded-full animate-float"
-        style={{ background: `radial-gradient(circle, ${cfg.color}15, transparent 70%)`, animationDelay: '1s' }} />
-      <div className="absolute right-12 top-1 w-12 h-12 rounded-full animate-pulse-soft"
-        style={{ background: `radial-gradient(circle, ${cfg.color}12, transparent 70%)`, animationDelay: '0.5s' }} />
-      <div className="absolute left-1/3 -top-4 w-8 h-8 rounded-full animate-pulse-soft"
-        style={{ background: `radial-gradient(circle, ${cfg.color}10, transparent 70%)`, animationDelay: '1.5s' }} />
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="glass-card p-4 mb-4"
+      style={{ position: 'relative', overflow: 'hidden' }}
+    >
+      {/* Decorative blobs */}
+      <div style={{
+        position: 'absolute', right: -24, top: -24, width: 96, height: 96,
+        borderRadius: '50%', background: `radial-gradient(circle, ${cfg.color}15, transparent 70%)`,
+        animation: 'float 3s ease-in-out infinite',
+      }} />
+      <div style={{
+        position: 'absolute', left: -16, bottom: -16, width: 64, height: 64,
+        borderRadius: '50%', background: `radial-gradient(circle, ${cfg.color}10, transparent 70%)`,
+        animation: 'float 3s ease-in-out infinite', animationDelay: '1s',
+      }} />
 
-      <div className="relative flex items-center justify-between mb-3">
-        <span className="badge-soft text-xs font-extrabold px-2.5 py-1 rounded-full"
-          style={{ background: `linear-gradient(135deg, ${cfg.color}18, ${cfg.color}08)` }}>今日灵感</span>
-        <span className="text-xs text-[var(--color-text-secondary)]">不知道吃啥就选它</span>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <span className="tag tag-love" style={{ fontSize: 12, fontWeight: 700 }}>今日灵感</span>
+        <span className="t-caption">不知道吃啥就选它</span>
       </div>
-      <div className="relative flex items-center gap-3">
-        <div className="w-16 h-16 rounded-[22px] flex items-center justify-center shrink-0 overflow-hidden"
-          style={{
-            background: `linear-gradient(145deg, ${cfg.light} 0%, #FFFFFF 60%, ${cfg.color}08 100%)`,
-            boxShadow: `inset 0 2px 8px ${cfg.color}12, 0 4px 12px ${cfg.color}15`,
-          }}>
-          <span className="text-3xl drop-shadow-sm">{cfg.emoji}</span>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{
+          width: 60, height: 60, borderRadius: 18, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: `linear-gradient(145deg, ${cfg.color}12, #FFFFFF 60%, ${cfg.color}06)`,
+          boxShadow: `inset 0 2px 8px ${cfg.color}10, 0 4px 12px ${cfg.color}12`,
+        }}>
+          <span style={{ fontSize: 28 }}>{cfg.emoji}</span>
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-[17px] text-[var(--color-text)] truncate">{randomDish.name}</h3>
-          <p className="text-xs text-[var(--color-text-secondary)] mt-0.5 line-clamp-1">{randomDish.description || '好吃的~'}</p>
-          <div className="flex items-center gap-1 mt-1.5">
-            <KissIcon className="w-3.5 h-3.5 text-[var(--color-secondary)]" />
-            <LovePrice price={randomDish.price} size="lg" showLabel />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 className="t-h3" style={{ fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{randomDish.name}</h3>
+          <p className="t-caption" style={{ WebkitLineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {randomDish.description || '好吃的~'}
+          </p>
+          <div style={{ marginTop: 4 }}>
+            <LovePrice price={randomDish.price} size="md" showLabel />
           </div>
         </div>
-        <motion.button whileTap={{ scale: 0.92 }} whileHover={{ scale: 1.04 }} onClick={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect()
-          spawnParticle(rect.left + rect.width / 2, rect.top)
-          onAdd(randomDish)
-        }}
-          className="d3-btn d3-btn-primary text-white px-3.5 py-2 rounded-2xl text-xs font-bold"
-          style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))' }}>
+        <motion.button
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.04 }}
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect()
+            spawnParticle(rect.left + rect.width / 2, rect.top)
+            onAdd(randomDish)
+          }}
+          className="btn btn-sm"
+          style={{
+            background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+            color: 'white',
+            fontWeight: 700,
+            borderRadius: 14,
+            padding: '8px 16px',
+          }}
+        >
           加一份
         </motion.button>
       </div>
@@ -114,37 +188,75 @@ function RecommendCard({ dishes, onAdd, spawnParticle }) {
   )
 }
 
-const CATEGORY_GROUPS = [
-  {
-    label: '家常',
-    items: ['全部', '家常菜', '硬菜', '素菜', '主食', '小吃', '水果', '饮品', '汤类']
-  },
-  {
-    label: '八大菜系',
-    items: ['川菜', '粤菜', '湘菜', '鲁菜', '苏菜', '浙菜', '闽菜', '徽菜']
-  },
-  {
-    label: '地方风味',
-    items: ['东北菜', '西北菜', '云贵菜', '其他']
-  }
-]
+/* ══════════════════════════════════════════
+   Toast — Success Feedback
+   ══════════════════════════════════════════ */
+
+function Toast({ message, visible }) {
+  return (
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: -16, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -16, scale: 0.95 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          style={{
+            position: 'fixed',
+            top: 44,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 100,
+            background: 'linear-gradient(135deg, #07C160, #06AD56)',
+            color: 'white',
+            padding: '10px 20px',
+            borderRadius: 14,
+            fontSize: 14,
+            fontWeight: 600,
+            boxShadow: '0 4px 16px rgba(7,193,96,0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span>✅</span>
+          {message}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+/* ══════════════════════════════════════════
+   MENU PAGE — Glass Bento UI
+   ══════════════════════════════════════════ */
 
 export default function Menu() {
   const [dishes, setDishes] = useState([])
-  const [categories, setCategories] = useState([])
   const [activeCategory, setActiveCategory] = useState('全部')
   const [keyword, setKeyword] = useState('')
   const [loading, setLoading] = useState(true)
-  const [searchFocused, setSearchFocused] = useState(false)
   const [showAllCategories, setShowAllCategories] = useState(false)
-  const searchRef = useRef(null)
+  const [searchFocused, setSearchFocused] = useState(false)
   const [particles, setParticles] = useState([])
+  const [toast, setToast] = useState({ visible: false, message: '' })
+  const searchRef = useRef(null)
+  const listRef = useRef(null)
   const { addItem, totalCount, whoAmI, setWhoAmI } = useCart()
   const navigate = useNavigate()
 
+  /* ── Fetch Categories ── */
   useEffect(() => {
-    fetch('/api/dishes/categories').then(r => r.json()).then(setCategories)
+    fetch('/api/dishes/categories').then(r => r.json()).catch(() => {})
   }, [])
+
+  /* ── Fetch Dishes + Debounced Keyword ── */
+  const [debouncedKeyword, setDebouncedKeyword] = useState('')
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedKeyword(keyword), 300)
+    return () => clearTimeout(timer)
+  }, [keyword])
 
   useEffect(() => {
     setLoading(true)
@@ -154,145 +266,187 @@ export default function Menu() {
       .catch(() => setLoading(false))
   }, [activeCategory])
 
+  /* ── Filter ── */
   const filteredDishes = useMemo(() => {
-    const q = keyword.trim().toLowerCase()
+    const q = debouncedKeyword.trim().toLowerCase()
     if (!q) return dishes
     return dishes.filter(d => `${d.name} ${d.category} ${d.description || ''}`.toLowerCase().includes(q))
-  }, [dishes, keyword])
+  }, [dishes, debouncedKeyword])
 
-  const spawnParticle = (x, y) => {
+  /* ── Scroll to top on category change ── */
+  const handleCategoryChange = useCallback((cat) => {
+    setActiveCategory(cat)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  /* ── Add to cart with toast ── */
+  const handleAdd = useCallback((dish) => {
+    addItem(dish)
+    setToast({ visible: true, message: `已加入购物车` })
+    setTimeout(() => setToast({ visible: false, message: '' }), 2000)
+  }, [addItem])
+
+  /* ── Particle ── */
+  const spawnParticle = useCallback((x, y) => {
     const id = Date.now() + Math.random()
     setParticles(prev => [...prev, { id, x, y }])
-    setTimeout(() => {
-      setParticles(prev => prev.filter(p => p.id !== id))
-    }, 950)
-  }
+    setTimeout(() => setParticles(prev => prev.filter(p => p.id !== id)), 950)
+  }, [])
 
   return (
     <div>
-      <Header title="今天吃什么？" subtitle="一起选点好吃的吧~" />
+      <Toast message={toast.message} visible={toast.visible} />
 
-      <div className="px-4 pb-4">
+      {/* ═══ Section 1: WhoSelector + Search ═══ */}
+      <div className="page-container-tight">
         <WhoSelector whoAmI={whoAmI} setWhoAmI={setWhoAmI} />
 
-        {/* 搜索框 - 增加聚焦发光和搜索图标动画 */}
-        <div className={`d3-card-face flex items-center gap-2 px-3 py-2.5 mb-4 bg-[var(--color-card)]/90 transition-all duration-300 ${searchFocused ? 'ring-[3px] ring-[var(--color-primary)]/20 border-[var(--color-primary)]/40' : ''}`}
-          ref={searchRef}>
-          <motion.svg className={`w-4 h-4 text-[var(--color-text-secondary)] transition-colors duration-300 ${searchFocused ? 'text-[var(--color-primary)]' : ''}`}
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+        {/* Search Bar */}
+        <div
+          ref={searchRef}
+          className="glass-card"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px',
+            marginBottom: 14, transition: 'border-color 0.3s, box-shadow 0.3s',
+            borderColor: searchFocused ? 'var(--color-primary)' : 'var(--color-border)',
+            boxShadow: searchFocused ? '0 0 0 3px rgba(255,107,53,0.1)' : undefined,
+          }}
+        >
+          <motion.svg
+            width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+            style={{ color: searchFocused ? 'var(--color-primary)' : 'var(--color-text-tertiary)', flexShrink: 0 }}
             animate={searchFocused ? { rotate: 90 } : { rotate: 0 }}
-            transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}>
-            <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+            transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+          >
+            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" />
           </motion.svg>
-          <input value={keyword} onChange={e => setKeyword(e.target.value)}
+          <input
+            value={keyword}
+            onChange={e => setKeyword(e.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
             placeholder="搜搜想吃的菜..."
-            className="d3-input bg-transparent flex-1 text-sm placeholder:text-[var(--color-text-secondary)]/60 outline-none" />
+            className="input-glass"
+            style={{
+              flex: 1, border: 'none', background: 'transparent', padding: 0, minHeight: 'auto',
+              outline: 'none', fontSize: 14,
+            }}
+          />
           <AnimatePresence>
             {keyword && (
-              <motion.button onClick={() => setKeyword('')}
-                initial={{ opacity: 0, scale: 0.8, width: 0 }}
-                animate={{ opacity: 1, scale: 1, width: 'auto' }}
-                exit={{ opacity: 0, scale: 0.8, width: 0 }}
-                transition={{ duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }}
-                className="text-xs text-[var(--color-primary)] font-bold px-1 whitespace-nowrap overflow-hidden">清空</motion.button>
+              <motion.button
+                onClick={() => setKeyword('')}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+                className="btn btn-ghost btn-sm"
+                style={{ minHeight: 28, padding: '2px 10px', fontSize: 12, fontWeight: 600, color: 'var(--color-primary)' }}
+              >
+                清空
+              </motion.button>
             )}
           </AnimatePresence>
         </div>
 
-        {!loading && <RecommendCard dishes={filteredDishes.length ? filteredDishes : dishes} onAdd={addItem} spawnParticle={spawnParticle} />}
+        {/* ═══ Section 2: Recommend Card (when not searching) ═══ */}
+        {!loading && !debouncedKeyword && (
+          <RecommendCard dishes={filteredDishes.length ? filteredDishes : dishes} onAdd={handleAdd} spawnParticle={spawnParticle} />
+        )}
 
-        {/* 分类标签 - 可折叠分组网格布局 */}
-        <div className="mb-3">
-          {/* 常用分类（始终显示） */}
-          <div className="flex flex-wrap gap-2 items-center">
+        {/* ═══ Section 3: Category Tags ═══ */}
+        <div style={{ marginBottom: 12 }}>
+          {/* Primary categories */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             {CATEGORY_GROUPS[0].items.map(cat => {
               const cfg = CATEGORY_CONFIG[cat] || CATEGORY_CONFIG['其他']
               const active = activeCategory === cat
               return (
-                <motion.button key={cat}
+                <motion.button
+                  key={cat}
                   whileTap={{ scale: 0.95 }}
-                  whileHover={{ y: -1 }}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${active ? 'd3-btn d3-btn-primary text-white' : 'd3-btn-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary-dark)]'}`}
-                  style={active ? {
-                    background: `linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)`,
-                    boxShadow: '0 4px 14px rgba(255, 107, 53, 0.30), 0 1px 3px rgba(196, 95, 44, 0.15)',
-                  } : {}}>
-                  <span className="text-xs">{cfg.emoji}</span>{cat}
+                  onClick={() => handleCategoryChange(cat)}
+                  className={`tag ${active ? 'tag-active' : ''}`}
+                  style={{
+                    cursor: 'pointer', padding: '6px 12px', fontSize: 12, fontWeight: 700,
+                    transition: 'all 0.25s',
+                    boxShadow: active ? '0 2px 8px rgba(255,107,53,0.3)' : 'none',
+                  }}
+                >
+                  <span style={{ fontSize: 12 }}>{cfg.emoji}</span>
+                  {cat}
                 </motion.button>
               )
             })}
-            {/* 更多菜系展开/收起按钮 */}
             {!showAllCategories && (
               <motion.button
-                key="toggle-btn"
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowAllCategories(true)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border border-[var(--color-primary)]/30 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-all duration-300">
+                className="tag"
+                style={{ cursor: 'pointer', fontWeight: 600, borderColor: 'rgba(255,107,53,0.3)', color: 'var(--color-primary)' }}
+              >
                 更多菜系
-                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M3 4.5L6 7.5L9 4.5" />
                 </svg>
-                <span className="inline-flex items-center justify-center w-4 h-3 rounded-full bg-[var(--color-primary)] text-white text-[9px] leading-none font-extrabold">
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 16, height: 14, borderRadius: 7, background: 'var(--color-primary)',
+                  color: 'white', fontSize: 9, fontWeight: 800, lineHeight: 1,
+                }}>
                   {CATEGORY_GROUPS.slice(1).reduce((sum, g) => sum + g.items.length, 0)}
                 </span>
               </motion.button>
             )}
           </div>
 
-          {/* 展开区域 - 八大菜系 + 地方风味 */}
+          {/* Expanded categories */}
           <AnimatePresence>
             {showAllCategories && (
               <motion.div
-                key="expanded-categories"
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
-                className="overflow-hidden"
+                style={{ overflow: 'hidden' }}
               >
-                <div className="pt-2 space-y-1.5">
-                  {/* 收起按钮 */}
-                  <div className="flex justify-end">
+                <div style={{ paddingTop: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowAllCategories(false)}
-                      className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200">
+                      className="btn btn-ghost btn-sm"
+                      style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)' }}
+                    >
                       收起
-                      <svg className="w-2.5 h-2.5" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                         <path d="M3 7.5L6 4.5L9 7.5" />
                       </svg>
                     </motion.button>
                   </div>
-
-                  {/* 分组列表 */}
                   {CATEGORY_GROUPS.slice(1).map(group => (
-                    <div key={group.label}>
-                      <div className="text-[10px] font-extrabold px-0.5 pb-1"
-                        style={{
-                          background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                        }}>
+                    <div key={group.label} style={{ marginBottom: 6 }}>
+                      <span className="gradient-text" style={{ fontSize: 10, fontWeight: 800, display: 'block', marginBottom: 4 }}>
                         {group.label}
-                      </div>
-                      <div className="flex flex-wrap gap-2">
+                      </span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                         {group.items.map(cat => {
                           const cfg = CATEGORY_CONFIG[cat] || CATEGORY_CONFIG['其他']
                           const active = activeCategory === cat
                           return (
-                            <motion.button key={cat}
+                            <motion.button
+                              key={cat}
                               whileTap={{ scale: 0.95 }}
-                              whileHover={{ y: -1 }}
-                              onClick={() => setActiveCategory(cat)}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${active ? 'd3-btn d3-btn-primary text-white' : 'd3-btn-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary-dark)]'}`}
-                              style={active ? {
-                                background: `linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)`,
-                                boxShadow: '0 4px 14px rgba(255, 107, 53, 0.30), 0 1px 3px rgba(196, 95, 44, 0.15)',
-                              } : {}}>
-                              <span className="text-xs">{cfg.emoji}</span>{cat}
+                              onClick={() => handleCategoryChange(cat)}
+                              className={`tag ${active ? 'tag-active' : ''}`}
+                              style={{
+                                cursor: 'pointer', padding: '6px 12px', fontSize: 12, fontWeight: 700,
+                                boxShadow: active ? '0 2px 8px rgba(255,107,53,0.3)' : 'none',
+                              }}
+                            >
+                              <span style={{ fontSize: 12 }}>{cfg.emoji}</span>
+                              {cat}
                             </motion.button>
                           )
                         })}
@@ -305,87 +459,152 @@ export default function Menu() {
           </AnimatePresence>
         </div>
 
+        {/* ═══ Section 4: Dish List ═══ */}
         {loading ? (
-          /* 骨架屏 - 优化占位动画 */
-          <div className="space-y-3.5">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="d3-card p-3.5 flex items-center gap-3 overflow-hidden">
-                <div className="w-[70px] h-[70px] rounded-[24px] animate-shimmer-fade shrink-0" />
-                <div className="flex-1 space-y-2.5">
-                  <div className="h-[16px] w-[55%] animate-shimmer-fade rounded-full" style={{ animationDelay: `${i * 0.15}s` }} />
-                  <div className="h-[12px] w-[35%] animate-shimmer-fade rounded-full" style={{ animationDelay: `${i * 0.15 + 0.1}s` }} />
-                  <div className="h-[12px] w-[25%] animate-shimmer-fade rounded-full" style={{ animationDelay: `${i * 0.15 + 0.2}s` }} />
-                </div>
-              </div>
-            ))}
-          </div>
+          <MenuSkeleton />
         ) : filteredDishes.length === 0 ? (
-          /* 空状态 - 增加插画感 */
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="d3-card flex flex-col items-center justify-center py-16 px-4">
-            {/* 装饰背景圆 */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-              <div className="w-32 h-32 rounded-full animate-pulse-soft"
-                style={{ background: 'radial-gradient(circle, rgba(232,128,74,0.08), transparent 70%)' }} />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="glass-card"
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              padding: '48px 16px', position: 'relative', overflow: 'hidden',
+            }}
+          >
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              pointerEvents: 'none',
+            }}>
+              <div style={{
+                width: 120, height: 120, borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(255,107,53,0.06), transparent 70%)',
+                animation: 'pulse-glow 2s ease-in-out infinite',
+              }} />
             </div>
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5 animate-float"
-                style={{ background: 'linear-gradient(135deg, rgba(232,128,74,0.10), rgba(250,81,81,0.08))' }}>
-                <span className="text-5xl">🔍</span>
-              </div>
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 16, position: 'relative',
+              background: 'linear-gradient(135deg, rgba(255,107,53,0.08), rgba(250,81,81,0.06))',
+              animation: 'float 3s ease-in-out infinite',
+            }}>
+              <span style={{ fontSize: 36 }}>🔍</span>
             </div>
-            <p className="text-[var(--color-text)] font-bold text-base">没搜到这口</p>
-            <p className="text-[var(--color-text-secondary)] text-sm mt-1.5 text-center max-w-[200px] leading-relaxed">换个关键词试试~<br/>也许换个名字就能找到啦</p>
+            <p className="t-h2" style={{ marginBottom: 4 }}>没搜到这口</p>
+            <p className="t-caption" style={{ textAlign: 'center', maxWidth: 200 }}>
+              换个关键词试试~<br />也许换个名字就能找到啦
+            </p>
           </motion.div>
         ) : (
-          <motion.div className="space-y-3.5" variants={container} initial="hidden" animate="show">
+          <motion.div
+            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.04 } },
+            }}
+          >
             {filteredDishes.map(dish => {
               const cfg = CATEGORY_CONFIG[dish.category] || CATEGORY_CONFIG['其他']
               return (
-                <motion.div key={`${dish.id}-${dish.name}`} variants={item}
+                <motion.div
+                  key={`${dish.id}-${dish.name}`}
+                  variants={{
+                    hidden: { opacity: 0, y: 14 },
+                    show: { opacity: 1, y: 0 },
+                  }}
                   whileTap={{ scale: 0.985 }}
-                  whileHover={{ y: -1 }}
-                  className="d3-card cursor-pointer overflow-hidden group">
-                  <div className="d3-card-face p-3.5 flex items-center gap-3"
-                    onClick={() => navigate(`/dish/${dish.id}`)}>
-                  {/* 左侧彩色装饰条 */}
-                  <div className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full transition-all duration-300 opacity-60 group-hover:opacity-100"
-                    style={{ background: `linear-gradient(180deg, ${cfg.color}, ${cfg.color}80)` }} />
-                  <div className="w-[70px] h-[70px] rounded-[24px] flex items-center justify-center shrink-0 overflow-hidden transition-all duration-300"
-                    style={{
-                      background: `linear-gradient(145deg, ${cfg.light} 0%, #FFFFFF 50%, ${cfg.color}06 100%)`,
-                      boxShadow: `inset 0 2px 6px ${cfg.color}10, 0 4px 10px ${cfg.color}12`,
+                  className="glass-card"
+                  style={{ cursor: 'pointer', overflow: 'hidden', position: 'relative' }}
+                  onClick={() => navigate(`/dish/${dish.id}`)}
+                >
+                  {/* Left color bar */}
+                  <div style={{
+                    position: 'absolute', left: 0, top: 12, bottom: 12, width: 3, borderRadius: '0 3px 3px 0',
+                    background: `linear-gradient(180deg, ${cfg.color}, ${cfg.color}60)`,
+                    opacity: 0.5, transition: 'opacity 0.2s',
+                  }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px' }}>
+                    {/* Dish Image */}
+                    <div style={{
+                      width: 64, height: 64, borderRadius: 18, flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden', position: 'relative',
+                      background: `linear-gradient(145deg, ${cfg.color}10, #FFFFFF 50%, ${cfg.color}05)`,
+                      boxShadow: `inset 0 2px 6px ${cfg.color}08, 0 4px 10px ${cfg.color}10`,
                     }}>
-                    {dish.image_url ? <img src={dish.image_url} alt={dish.name} className="w-full h-full object-cover" /> : <span className="text-3xl drop-shadow-sm">{cfg.emoji}</span>}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="font-extrabold text-[16px] text-[var(--color-text)] truncate">{dish.name}</h3>
-                      <span className="badge-soft text-[10px] px-1.5 py-0.5 rounded-full font-bold">{dish.category}</span>
+                      {dish.image_url ? (
+                        <img
+                          src={`${baseUrl}${dish.image_url}`}
+                          alt={dish.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            e.target.style.display = 'none'
+                            e.target.parentElement.style.background = `linear-gradient(145deg, ${cfg.color}10, #FFFFFF 50%, ${cfg.color}05)`
+                            const span = document.createElement('span')
+                            span.style.fontSize = '28px'
+                            span.textContent = cfg.emoji
+                            e.target.parentElement.appendChild(span)
+                          }}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span style={{ fontSize: 28 }}>{cfg.emoji}</span>
+                      )}
                     </div>
-                    {dish.description && <p className="text-[13px] text-[var(--color-text-secondary)] mt-1 line-clamp-1 leading-relaxed">{dish.description}{getDishRecipe(dish.id) && <span className="text-[var(--color-primary)] ml-1 opacity-70">· 点击查看做法 →</span>}</p>}
-                    {!dish.description && getDishRecipe(dish.id) && <p className="text-[13px] text-[var(--color-primary)] mt-1 opacity-70">点击查看做法 →</p>}
-                    <div className="flex items-center justify-between mt-2.5">
-                      <div className="flex items-center gap-1">
-                        <KissIcon className="w-3.5 h-3.5 text-[var(--color-secondary)]" />
-                        <LovePrice price={dish.price} size="xl" showLabel />
+                    {/* Dish Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <h3 className="t-h3" style={{ fontSize: 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {dish.name}
+                        </h3>
+                        <span className="tag" style={{ fontSize: 10, padding: '2px 6px', flexShrink: 0 }}>
+                          {dish.category}
+                        </span>
                       </div>
-                      <motion.button whileTap={{ scale: 0.82 }} whileHover={{ scale: 1.08 }} onClick={(e) => {
-                        e.stopPropagation()
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        spawnParticle(rect.left + rect.width / 2, rect.top)
-                        addItem(dish)
-                      }} aria-label={`添加${dish.name}`}
-                        className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-90"
-                        style={{
-                          background: whoAmI === 'me' ? 'linear-gradient(135deg, var(--color-peach), var(--color-secondary))' : 'linear-gradient(135deg, var(--color-haze), #567BB5)',
-                          boxShadow: '0 4px 12px rgba(255, 107, 53, 0.20), 0 2px 6px rgba(196, 95, 44, 0.12), inset 0 1px 0 rgba(255,255,255,0.65)',
-                        }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.8" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                      </motion.button>
+                      {dish.description && (
+                        <p className="t-caption" style={{ WebkitLineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', marginTop: 2 }}>
+                          {dish.description}
+                          {getDishRecipe(dish.id) && (
+                            <span style={{ color: 'var(--color-primary)', marginLeft: 4, opacity: 0.7 }}>· 点击查看做法 →</span>
+                          )}
+                        </p>
+                      )}
+                      {!dish.description && getDishRecipe(dish.id) && (
+                        <p className="t-caption" style={{ color: 'var(--color-primary)', opacity: 0.7, marginTop: 2 }}>
+                          点击查看做法 →
+                        </p>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                        <LovePrice price={dish.price} size="md" showLabel />
+                        <motion.button
+                          whileTap={{ scale: 0.82 }}
+                          whileHover={{ scale: 1.08 }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const rect = e.currentTarget.getBoundingClientRect()
+                            spawnParticle(rect.left + rect.width / 2, rect.top)
+                            handleAdd(dish)
+                          }}
+                          className="btn btn-icon-sm"
+                          aria-label={`添加${dish.name}`}
+                          style={{
+                            background: whoAmI === 'me'
+                              ? 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))'
+                              : 'linear-gradient(135deg, var(--color-haze), #567BB5)',
+                            color: 'white',
+                            boxShadow: '0 4px 12px rgba(255,107,53,0.2)',
+                          }}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                          </svg>
+                        </motion.button>
+                      </div>
                     </div>
                   </div>
-                </div>
                 </motion.div>
               )
             })}
@@ -393,7 +612,7 @@ export default function Menu() {
         )}
       </div>
 
-      {/* +1 飘升粒子 */}
+      {/* ═══ +1 Particles ═══ */}
       <AnimatePresence>
         {particles.map(p => (
           <motion.div
@@ -402,31 +621,59 @@ export default function Menu() {
             animate={{ opacity: 0, y: -60, scale: 1.4 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed z-[100] pointer-events-none"
-            style={{ left: p.x, top: p.y }}
+            style={{ position: 'fixed', zIndex: 100, pointerEvents: 'none', left: p.x, top: p.y }}
           >
-            <div className="flex items-center gap-0.5 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] text-white text-xs font-extrabold px-2 py-1 rounded-full shadow-lg">
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 2,
+              background: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+              color: 'white', fontSize: 12, fontWeight: 800, padding: '4px 10px',
+              borderRadius: 12, boxShadow: '0 2px 8px rgba(255,107,53,0.3)',
+            }}>
               <span>+1</span>
-              <KissIcon className="w-3 h-3" />
+              <span>💋</span>
             </div>
           </motion.div>
         ))}
       </AnimatePresence>
 
-      {/* 底部悬浮按钮 - 增加脉动发光动画 */}
+      {/* ═══ Bottom Cart FAB ═══ */}
       {totalCount > 0 && (
-        <motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[448px] z-40">
-          <motion.button whileTap={{ scale: 0.97 }} whileHover={{ scale: 1.02 }} onClick={() => navigate('/cart')}
-            className="d3-btn d3-btn-primary block w-full text-white text-center py-3.5 rounded-2xl font-extrabold text-[15px] animate-pulse-glow relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)' }}>
-            {/* 按钮内部光效 */}
-            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-              <div className="absolute -top-1/2 -left-1/4 w-[60%] h-[200%] rotate-[20deg] animate-pulse-soft"
-                style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }} />
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          style={{
+            position: 'fixed',
+            bottom: 88,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 'calc(100% - 32px)',
+            maxWidth: 448,
+            zIndex: 40,
+          }}
+        >
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.02 }}
+            onClick={() => navigate('/cart')}
+            className="btn-primary"
+            style={{
+              width: '100%', minHeight: 48, borderRadius: 16, fontSize: 15, fontWeight: 800,
+              background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
+              position: 'relative', overflow: 'hidden',
+            }}
+          >
+            <div style={{
+              position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 16, pointerEvents: 'none',
+            }}>
+              <div style={{
+                position: 'absolute', top: '-50%', left: '-25%', width: '60%', height: '200%',
+                transform: 'rotate(20deg)',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
+                animation: 'pulse-glow 2s ease-in-out infinite',
+              }} />
             </div>
-            <span className="relative flex items-center justify-center gap-2">
-              <span className="text-lg">🛒</span>
+            <span style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>🛒</span>
               去看我们选了啥 ({totalCount}件)
             </span>
           </motion.button>

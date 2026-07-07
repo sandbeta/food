@@ -1,45 +1,47 @@
-import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from './CartContext'
 
 export default function D3CartOrb() {
-  const { totalCount } = useCart()
   const navigate = useNavigate()
+  const { totalCount, totalPrice } = useCart()
+
+  if (totalCount === 0) return null
 
   return (
     <AnimatePresence>
-      {totalCount > 0 && (
-        <motion.div
-          className="fixed bottom-24 right-4 z-50"
-          initial={{ scale: 0, rotateY: -180 }}
-          animate={{ scale: 1, rotateY: 0 }}
-          exit={{ scale: 0, rotateY: 180 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-        >
-          <motion.button
-            className="relative w-16 h-16 rounded-full flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #FF8F5A 0%, #FF6B35 100%)',
-              boxShadow: '0 6px 20px rgba(255,107,53,0.35), 0 12px 32px rgba(0,0,0,0.15), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.2)',
-            }}
-            whileHover={{ scale: 1.1, y: -2 }}
-            whileTap={{ scale: 0.92 }}
-            onClick={() => navigate('/cart')}
-          >
-            <span className="text-2xl">🛒</span>
-            <motion.span
-              key={totalCount}
-              initial={{ scale: 0.3, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-              className="absolute -top-1 -right-1 min-w-[22px] h-[22px] rounded-full bg-red-500 text-white text-[11px] font-bold flex items-center justify-center px-1 border-2 border-[#F7F8FA]"
-              style={{ boxShadow: '0 2px 8px rgba(250,81,81,0.4)' }}
-            >
-              {totalCount}
-            </motion.span>
-          </motion.button>
-        </motion.div>
-      )}
+      <motion.button
+        onClick={() => navigate('/cart')}
+        style={{
+          position: 'fixed',
+          bottom: 88,
+          right: 'max(16px, calc((100vw - 480px) / 2 + 16px))',
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '10px 18px',
+          borderRadius: 28,
+          border: 'none',
+          background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%)',
+          color: 'white',
+          boxShadow: '0 4px 20px rgba(255,107,53,0.4)',
+          cursor: 'pointer',
+          fontFamily: 'var(--font-sans)',
+          fontSize: 14,
+          fontWeight: 700,
+        }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <span style={{ fontSize: 18 }}>🛒</span>
+        <span>{totalCount} 件</span>
+        <span style={{ opacity: 0.8, fontSize: 12 }}>·</span>
+        <span>💋 {totalPrice}</span>
+      </motion.button>
     </AnimatePresence>
   )
 }

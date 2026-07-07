@@ -29,75 +29,135 @@ export default function AddDishModal({ dish, onClose, onSave }) {
 
   return (
     <>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        onClick={onClose} className="fixed inset-0 z-50"
-        style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(0,0,0,0.2)' }} />
-      <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 50,
+          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          background: 'rgba(0,0,0,0.15)',
+        }}
+      />
+      <motion.div
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto z-50">
-        <div className="d3-card-face rounded-t-3xl max-h-[85vh] overflow-hidden">
-          <div className="flex justify-center pt-3 pb-1">
-            <div className="w-12 h-1.5 rounded-full" style={{ background: 'linear-gradient(90deg, var(--color-primary-light), var(--color-primary), var(--color-primary-light))' }} />
+        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, maxWidth: 480, margin: '0 auto', zIndex: 50 }}
+      >
+        <div
+          className="glass-card"
+          style={{ borderRadius: '24px 24px 0 0', maxHeight: '85vh', overflow: 'hidden' }}
+        >
+          {/* Handle */}
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
+            <div style={{
+              width: 40, height: 4, borderRadius: 2,
+              background: 'linear-gradient(90deg, var(--color-primary-light), var(--color-primary), var(--color-primary-light))',
+            }} />
           </div>
-          <div className="px-5 pb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, var(--color-primary-light), var(--color-primary))' }}>
-                <span className="text-sm">{dish ? '✏️' : '➕'}</span>
+
+          {/* Title */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 12,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'linear-gradient(135deg, var(--color-primary-light), var(--color-primary))',
+                fontSize: 14,
+              }}>
+                <span>{dish ? '✏️' : '➕'}</span>
               </div>
-              <h2 className="text-lg font-bold text-[var(--color-text)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>{dish ? '改改这道菜' : '加一道新菜'}</h2>
+              <h2 className="t-h2" style={{ fontFamily: 'var(--font-display)' }}>{dish ? '改改这道菜' : '加一道新菜'}</h2>
             </div>
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#FFF8F2]/80 flex items-center justify-center text-gray-400 hover:scale-105 active:scale-95 transition-transform">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-            </button>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={onClose}
+              className="btn btn-ghost btn-icon-sm"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </motion.button>
           </div>
-          <form onSubmit={handleSubmit} className="px-5 pb-8 overflow-y-auto max-h-[calc(85vh-80px)]">
-            <div className="space-y-4">
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ padding: '0 20px 24px', overflowY: 'auto', maxHeight: 'calc(85vh - 80px)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {FIELDS.map(f => (
                 <div key={f.key}>
-                  <label className="text-[13px] text-[var(--color-text-secondary)] block mb-1.5 font-semibold flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-primary)' }} />
+                  <label className="t-caption" style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>
                     {f.label}
                   </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none opacity-60">{f.icon}</span>
-                    <input type={f.type} value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                      className="d3-input w-full pl-9 pr-3 py-2.5 text-sm input-focus placeholder:text-[var(--color-text-secondary)]/40 bg-[#FFF8F2]"
-                      style={{ focusRingColor: 'var(--color-primary-light)' }}
-                      placeholder={f.placeholder} min={f.min} step={f.step} required={f.required} inputMode={f.inputMode} />
+                  <div style={{ position: 'relative' }}>
+                    <span style={{
+                      position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                      fontSize: 14, opacity: 0.6, pointerEvents: 'none',
+                    }}>
+                      {f.icon}
+                    </span>
+                    <input
+                      type={f.type}
+                      value={form[f.key]}
+                      onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                      className="input-glass"
+                      style={{ paddingLeft: 36, fontSize: 14 }}
+                      placeholder={f.placeholder}
+                      min={f.min}
+                      step={f.step}
+                      required={f.required}
+                      inputMode={f.inputMode}
+                    />
                   </div>
                 </div>
               ))}
 
               <div>
-                <label className="text-[13px] text-[var(--color-text-secondary)] block mb-1.5 font-semibold flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-secondary)' }} />
-                  分类
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none opacity-60">
+                <label className="t-caption" style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>分类</label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{
+                    position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                    fontSize: 14, opacity: 0.6, pointerEvents: 'none',
+                  }}>
                     {CATEGORY_OPTIONS.find(c => c.value === form.category)?.emoji || '🍽️'}
                   </span>
-                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}
-                    className="d3-input w-full pl-9 pr-3 py-2.5 text-sm input-focus bg-[#FFF8F2] appearance-none cursor-pointer">
+                  <select
+                    value={form.category}
+                    onChange={e => setForm({ ...form, category: e.target.value })}
+                    className="input-glass"
+                    style={{ paddingLeft: 36, fontSize: 14, appearance: 'none', cursor: 'pointer' }}
+                  >
                     {CATEGORY_OPTIONS.map(c => (
                       <option key={c.value} value={c.value}>{c.emoji} {c.value}</option>
                     ))}
                   </select>
-                  <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)] opacity-40 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg style={{
+                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    width: 14, height: 14, color: 'var(--color-text-secondary)', opacity: 0.4, pointerEvents: 'none',
+                  }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-3 pt-6">
-              <motion.button type="button" whileTap={{ scale: 0.97 }} onClick={onClose}
-                className="d3-btn-sm flex-1 py-3 rounded-2xl font-bold text-sm border-2 transition-colors duration-150 bg-[var(--color-cream-dark)]"
-                style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)', background: 'transparent' }}>算了</motion.button>
-              <motion.button type="submit" whileTap={{ scale: 0.97 }}
-                className="d3-btn d3-btn-primary flex-1 py-3 rounded-2xl text-white font-bold text-sm transition-shadow duration-200"
-                style={{ background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))', boxShadow: '0 4px 15px rgba(212,165,116,0.35)' }}>好啦</motion.button>
+            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.97 }}
+                onClick={onClose}
+                className="btn btn-ghost"
+                style={{ flex: 1, fontWeight: 700, fontSize: 14, borderRadius: 16, minHeight: 44, border: '1px solid var(--color-border)' }}
+              >
+                算了
+              </motion.button>
+              <motion.button
+                type="submit"
+                whileTap={{ scale: 0.97 }}
+                className="btn btn-primary"
+                style={{ flex: 1, fontWeight: 700, fontSize: 14, borderRadius: 16, minHeight: 44 }}
+              >
+                好啦
+              </motion.button>
             </div>
           </form>
         </div>

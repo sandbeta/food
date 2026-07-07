@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import Header from '../components/Header'
 
 const QUICK_LINKS = [
   { label: '菜品管理', emoji: '🍽️', path: '/admin/dishes', color: '#FF6B35' },
@@ -27,46 +26,59 @@ export default function Admin() {
   }, [])
 
   return (
-    <div>
-      <Header title="管理后台" />
-      <div className="px-4 pb-4 space-y-4">
-        {/* 数据概览 */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-3 gap-3">
-          <div className="d3-card-face p-3 text-center">
-            <div className="text-xl font-bold text-[var(--color-primary)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>{stats.dishes}</div>
-            <div className="text-[10px] text-[var(--color-text-secondary)] mt-1">菜品</div>
-          </div>
-          <div className="d3-card-face p-3 text-center">
-            <div className="text-xl font-bold text-[var(--color-primary)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>{stats.orders}</div>
-            <div className="text-[10px] text-[var(--color-text-secondary)] mt-1">订单</div>
-          </div>
-          <div className="d3-card-face p-3 text-center">
-            <div className="text-xl font-bold text-[var(--color-primary)]" style={{ fontFamily: 'Fredoka, sans-serif' }}>{stats.today}</div>
-            <div className="text-[10px] text-[var(--color-text-secondary)] mt-1">今日</div>
-          </div>
-        </motion.div>
-
-        {/* 快捷入口 */}
-        <div className="grid grid-cols-2 gap-3">
-          {QUICK_LINKS.map(link => (
-            <motion.button key={link.label} whileTap={{ scale: 0.95 }}
-              onClick={() => navigate(link.path)}
-              className="d3-card-face p-5 text-center flex flex-col items-center gap-2"
-              style={{ borderLeft: `3px solid ${link.color}` }}>
-              <span className="text-3xl">{link.emoji}</span>
-              <span className="text-sm font-bold text-[var(--color-text)]">{link.label}</span>
-            </motion.button>
-          ))}
-        </div>
-
-        {/* 返回用户端 */}
-        <motion.button whileTap={{ scale: 0.97 }}
-          onClick={() => navigate('/home')}
-          className="d3-btn-sm w-full py-3 text-center text-sm font-bold text-[var(--color-text-secondary)] bg-[var(--color-cream-dark)]">
-          ← 返回用户端
-        </motion.button>
+    <div className="page-container-tight">
+      <div style={{ marginBottom: 14 }}>
+        <h1 className="t-h1" style={{ fontFamily: 'var(--font-display)' }}>管理后台</h1>
       </div>
+
+      {/* Stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 }}
+      >
+        {[
+          { label: '菜品', value: stats.dishes },
+          { label: '订单', value: stats.orders },
+          { label: '今日', value: stats.today },
+        ].map(s => (
+          <div key={s.label} className="glass-card" style={{ padding: 14, textAlign: 'center' }}>
+            <div className="t-h1" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-primary)', fontSize: 22 }}>
+              {s.value}
+            </div>
+            <div className="t-caption" style={{ marginTop: 2 }}>{s.label}</div>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Quick Links */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 12 }}>
+        {QUICK_LINKS.map(link => (
+          <motion.button
+            key={link.label}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate(link.path)}
+            className="glass-card"
+            style={{
+              padding: 20, textAlign: 'center', cursor: 'pointer',
+              borderLeft: `3px solid ${link.color}`,
+            }}
+          >
+            <span style={{ fontSize: 32, display: 'block', marginBottom: 8 }}>{link.emoji}</span>
+            <span className="t-h3">{link.label}</span>
+          </motion.button>
+        ))}
+      </div>
+
+      {/* Back */}
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={() => navigate('/home')}
+        className="btn btn-ghost"
+        style={{ width: '100%', color: 'var(--color-text-secondary)' }}
+      >
+        ← 返回用户端
+      </motion.button>
     </div>
   )
 }

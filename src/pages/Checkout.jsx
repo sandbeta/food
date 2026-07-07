@@ -5,12 +5,12 @@ import { useCart } from '../components/CartContext'
 import LovePrice, { LoveTotal } from '../components/LovePrice'
 
 const PAYER_OPTIONS = [
-  { value: 'aa', label: 'AA', emoji: '✌️' },
-  { value: 'me', label: '我请', emoji: '🙋' },
-  { value: 'partner', label: 'TA请', emoji: '💝' },
+  { value: 'treat', label: '老公请', emoji: '🧑‍🍳' },
+  { value: 'self', label: '宝宝请', emoji: '💅' },
+  { value: 'split', label: '记小本', emoji: '📝' },
 ]
 
-const PAYER_LABEL = { aa: 'AA', me: '我请客', partner: 'TA请客' }
+const PAYER_LABEL = { treat: '老公请', self: '宝宝请客', split: '记小本' }
 
 /* ══════════════════════════════════════════
    CHECKOUT PAGE — Glass Bento UI
@@ -18,7 +18,7 @@ const PAYER_LABEL = { aa: 'AA', me: '我请客', partner: 'TA请客' }
 
 export default function Checkout() {
   const { items, totalPrice, totalCount, clearCart } = useCart()
-  const [payer, setPayer] = useState(() => localStorage.getItem('couple_order_checkout_payer') || 'aa')
+  const [payer, setPayer] = useState(() => localStorage.getItem('couple_order_checkout_payer') || 'treat')
   const [note, setNote] = useState(() => localStorage.getItem('couple_order_checkout_note') || '')
   const [submitting, setSubmitting] = useState(false)
   const [celebrating, setCelebrating] = useState(false)
@@ -71,7 +71,7 @@ export default function Checkout() {
           className="t-h1"
           style={{ fontFamily: 'var(--font-display)', fontSize: 24 }}
         >
-          下单成功！
+          已通知大厨啦！
         </motion.p>
       </div>
     )
@@ -95,9 +95,9 @@ export default function Checkout() {
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, background: item.added_by === 'me' ? 'rgba(250,81,81,0.1)' : 'rgba(87,107,149,0.1)',
+                  fontSize: 12, background: item.added_by === 'share' ? 'rgba(87,107,149,0.1)' : 'rgba(250,81,81,0.1)',
                 }}>
-                  {item.added_by === 'me' ? '🐱' : '🐰'}
+                  {item.added_by === 'share' ? '🐱🐰' : '🐰'}
                 </div>
                 <span className="t-body" style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.name}
@@ -125,7 +125,7 @@ export default function Checkout() {
 
       {/* ═══ Payer ═══ */}
       <div className="glass-card" style={{ padding: 14, marginBottom: 10 }}>
-        <p className="t-caption" style={{ fontWeight: 700, marginBottom: 10 }}>谁来买单？</p>
+        <p className="t-caption" style={{ fontWeight: 700, marginBottom: 10 }}>记到谁头上？</p>
         <div style={{ display: 'flex', gap: 8 }}>
           {PAYER_OPTIONS.map(opt => (
             <motion.button
@@ -164,7 +164,7 @@ export default function Checkout() {
             opacity: submitting ? 0.5 : 1,
           }}
         >
-          {submitting ? '提交中...' : '确认下单'}
+          {submitting ? '通知大厨中...' : '下单给大厨'}
         </motion.button>
       </div>
     </div>

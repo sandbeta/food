@@ -9,7 +9,7 @@ const STATUS_CONFIG = {
   completed: { text: '做好啦', emoji: '🎉', desc: '快来吃吧，趁热~', ring: ['#D4EDDA', '#A8C5A0'], tagBg: 'rgba(7,193,96,0.1)', tagText: '#07C160', cardBg: 'linear-gradient(135deg, rgba(7,193,96,0.04), rgba(7,193,96,0.02))' },
 }
 
-const PAYER_LABEL = { aa: 'AA', me: '我请客', partner: 'TA请客' }
+const PAYER_LABEL = { treat: '老公请', self: '宝宝请客', split: '记小本' }
 
 /* ══════════════════════════════════════════
    ORDER DETAIL — Glass Bento UI
@@ -118,9 +118,9 @@ export default function OrderDetail() {
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, background: item.added_by === 'me' ? 'rgba(250,81,81,0.1)' : 'rgba(87,107,149,0.1)',
+                  fontSize: 12, background: item.added_by === 'share' ? 'rgba(87,107,149,0.1)' : 'rgba(250,81,81,0.1)',
                 }}>
-                  {item.added_by === 'me' ? '🐱' : '🐰'}
+                  {item.added_by === 'share' ? '🐱🐰' : '🐰'}
                 </div>
                 <span className="t-body" style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {item.dish_name}

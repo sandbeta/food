@@ -28,7 +28,7 @@ export default function MyOrders() {
     <div className="page-container-tight">
       {/* Header */}
       <div style={{ marginBottom: 14 }}>
-        <h1 className="t-h1" style={{ fontFamily: 'var(--font-display)' }}>我们的订单</h1>
+        <h1 className="t-h1" style={{ fontFamily: 'var(--font-display)' }}>宝宝点的单</h1>
         {orders.length > 0 && <p className="t-caption">一共 {orders.length} 笔</p>}
       </div>
 
@@ -128,9 +128,9 @@ export default function MyOrders() {
                               width: 24, height: 24, borderRadius: '50%', border: '2px solid white',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                               fontSize: 10, marginLeft: idx > 0 ? -6 : 0,
-                              background: it.added_by === 'me' ? 'rgba(250,81,81,0.1)' : 'rgba(87,107,149,0.1)',
+                              background: it.added_by === 'share' ? 'rgba(87,107,149,0.1)' : 'rgba(250,81,81,0.1)',
                             }}>
-                              {it.added_by === 'me' ? '🐱' : '🐰'}
+                              {it.added_by === 'share' ? '🐱🐰' : '🐰'}
                             </div>
                           ))}
                         </div>

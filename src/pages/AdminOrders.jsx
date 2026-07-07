@@ -17,7 +17,7 @@ const STATUS_ACTIONS = {
   pending: { next: 'preparing', text: '开始做', emoji: '🔥' },
   preparing: { next: 'completed', text: '做好了', emoji: '✅' },
 }
-const PAYER_LABEL = { aa: 'AA', me: '我请', partner: 'TA请' }
+const PAYER_LABEL = { treat: '老公请', self: '宝宝请客', split: '记小本' }
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([])

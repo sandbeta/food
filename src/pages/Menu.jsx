@@ -77,29 +77,29 @@ function MenuSkeleton() {
 }
 
 /* ══════════════════════════════════════════
-   WhoSelector
+   MoodSelector
    ══════════════════════════════════════════ */
 
-function WhoSelector({ whoAmI, setWhoAmI }) {
+function MoodSelector({ mode, setMode }) {
   return (
     <div className="glass-card p-1 flex items-center gap-1 mb-3" style={{ borderRadius: 16 }}>
-      <span className="t-caption" style={{ paddingLeft: 10, paddingRight: 4, fontWeight: 600 }}>给谁点</span>
-      {[{ value: 'me', label: '自己', icon: '🐱' }, { value: 'partner', label: 'TA', icon: '🐰' }].map(opt => (
+      <span className="t-caption" style={{ paddingLeft: 10, paddingRight: 4, fontWeight: 600 }}>今天想</span>
+      {[{ value: 'her', label: '宝宝吃', icon: '🐰' }, { value: 'share', label: '一起吃', icon: '🐱🐰' }].map(opt => (
         <motion.button
           key={opt.value}
           whileTap={{ scale: 0.95 }}
-          onClick={() => setWhoAmI(opt.value)}
+          onClick={() => setMode(opt.value)}
           className="btn btn-sm flex-1"
           style={{
             minHeight: 36,
             borderRadius: 12,
             fontWeight: 700,
             fontSize: 13,
-            background: whoAmI === opt.value
-              ? (opt.value === 'me' ? 'linear-gradient(135deg, #FF8F5A, #FF6B35)' : 'linear-gradient(135deg, #576B95, #567BB5)')
+            background: mode === opt.value
+              ? (opt.value === 'her' ? 'linear-gradient(135deg, #FF8F5A, #FF6B35)' : 'linear-gradient(135deg, #576B95, #567BB5)')
               : 'transparent',
-            color: whoAmI === opt.value ? 'white' : 'var(--color-text-secondary)',
-            boxShadow: whoAmI === opt.value ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+            color: mode === opt.value ? 'white' : 'var(--color-text-secondary)',
+            boxShadow: mode === opt.value ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
           }}
         >
           <span>{opt.icon}</span>
@@ -244,7 +244,7 @@ export default function Menu() {
   const [toast, setToast] = useState({ visible: false, message: '' })
   const searchRef = useRef(null)
   const listRef = useRef(null)
-  const { addItem, totalCount, whoAmI, setWhoAmI } = useCart()
+  const { addItem, totalCount, mode, setMode } = useCart()
   const navigate = useNavigate()
 
   /* ── Fetch Categories ── */
@@ -298,9 +298,9 @@ export default function Menu() {
     <div>
       <Toast message={toast.message} visible={toast.visible} />
 
-      {/* ═══ Section 1: WhoSelector + Search ═══ */}
-      <div className="page-container-tight">
-        <WhoSelector whoAmI={whoAmI} setWhoAmI={setWhoAmI} />
+      {/* ═══ Section 1: MoodSelector + Search ═══ */}
+        <div className="page-container-tight">
+          <MoodSelector mode={mode} setMode={setMode} />
 
         {/* Search Bar */}
         <div
@@ -567,7 +567,7 @@ export default function Menu() {
                           className="btn btn-icon-sm"
                           aria-label={`添加${dish.name}`}
                           style={{
-                            background: whoAmI === 'me'
+                            background: mode === 'her'
                               ? 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))'
                               : 'linear-gradient(135deg, var(--color-haze), #567BB5)',
                             color: 'white',
@@ -650,7 +650,7 @@ export default function Menu() {
             </div>
             <span style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <span style={{ fontSize: 18 }}>🛒</span>
-              去看我们选了啥 ({totalCount}件)
+              去看宝宝选了啥 ({totalCount}件)
             </span>
           </motion.button>
         </motion.div>

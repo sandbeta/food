@@ -77,7 +77,7 @@ function Toast({ message, visible, type = 'success' }) {
 export default function DishDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { addItem, whoAmI } = useCart()
+  const { addItem, mode } = useCart()
   const [dish, setDish] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [recipeOpen, setRecipeOpen] = useState(false)
@@ -336,7 +336,7 @@ export default function DishDetail() {
             className="btn btn-hero"
             style={{ fontSize: 16, marginBottom: 12 }}
           >
-            <span>{whoAmI === 'me' ? '🐱' : '🐰'} 加入购物车</span>
+            <span>🐰 加入购物车</span>
           </motion.button>
           <button
             className="btn btn-ghost"

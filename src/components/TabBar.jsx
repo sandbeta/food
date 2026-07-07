@@ -6,7 +6,7 @@ const TABS = [
   { path: '/home', label: '首页', emoji: '🏠' },
   { path: '/menu', label: '吃什么', emoji: '🍜' },
   { path: '/orders', label: '订单', emoji: '📋' },
-  { path: '/profile', label: '我的', emoji: '🐰' },
+  { path: '/profile', label: '宝宝', emoji: '🐰' },
 ]
 
 export default function TabBar() {

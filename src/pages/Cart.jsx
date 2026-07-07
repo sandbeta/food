@@ -8,9 +8,9 @@ import { getCategoryEmoji } from '../lib/categoryIcons'
 const baseUrl = import.meta.env.BASE_URL || '/'
 
 const PAYER_OPTIONS = [
-  { value: 'aa', label: 'AA', emoji: '✌️', desc: '各付各的' },
-  { value: 'me', label: '我请', emoji: '🙋', desc: '今天我买单' },
-  { value: 'partner', label: 'TA请', emoji: '💝', desc: '让TA来~' },
+  { value: 'treat', label: '老公请', emoji: '🧑‍🍳', desc: '辛苦大厨啦' },
+  { value: 'self', label: '宝宝请', emoji: '💅', desc: '宝宝请客' },
+  { value: 'split', label: '记小本', emoji: '📝', desc: '回头一起算' },
 ]
 
 /* ══════════════════════════════════════════
@@ -20,7 +20,7 @@ const PAYER_OPTIONS = [
 export default function Cart() {
   const { items, totalPrice, totalCount, updateQuantity, removeItem } = useCart()
   const [note, setNote] = useState('')
-  const [payer, setPayer] = useState('aa')
+  const [payer, setPayer] = useState('treat')
   const navigate = useNavigate()
 
   const handleCheckout = () => {
@@ -75,7 +75,7 @@ export default function Cart() {
     <div className="page-container-tight">
       {/* ═══ Header ═══ */}
       <div style={{ marginBottom: 14 }}>
-        <h1 className="t-h1" style={{ fontFamily: 'var(--font-display)' }}>已选的菜</h1>
+        <h1 className="t-h1" style={{ fontFamily: 'var(--font-display)' }}>宝宝点的菜</h1>
         <p className="t-caption">共 {totalCount} 件</p>
       </div>
 
@@ -83,10 +83,10 @@ export default function Cart() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
         <AnimatePresence>
           {items.map(item => {
-            const identityColor = item.added_by === 'me' ? '#FA5151' : '#576B95'
-            const identityGradient = item.added_by === 'me'
-              ? 'linear-gradient(135deg, #FFAA7A, #FA5151)'
-              : 'linear-gradient(135deg, #576B95, #567BB5)'
+            const moodColor = item.added_by === 'share' ? '#576B95' : '#FA5151'
+            const moodGradient = item.added_by === 'share'
+              ? 'linear-gradient(135deg, #576B95, #567BB5)'
+              : 'linear-gradient(135deg, #FFAA7A, #FA5151)'
             return (
               <motion.div
                 key={`${item.dish_id}-${item.added_by}`}
@@ -97,11 +97,11 @@ export default function Cart() {
                 className="glass-card"
                 style={{ position: 'relative', overflow: 'hidden', padding: 12 }}
               >
-                {/* Left identity bar */}
+                {/* Left mood bar */}
                 <div style={{
                   position: 'absolute', left: 0, top: 10, bottom: 10, width: 3,
                   borderRadius: '0 3px 3px 0',
-                  background: identityGradient, opacity: 0.5,
+                  background: moodGradient, opacity: 0.5,
                 }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 4 }}>
                   {/* Avatar */}
@@ -109,9 +109,9 @@ export default function Cart() {
                     width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 14, background: `rgba(255,255,255,0.8)`,
-                    boxShadow: `0 2px 8px ${identityColor}20`,
+                    boxShadow: `0 2px 8px ${moodColor}20`,
                   }}>
-                    {item.added_by === 'me' ? '🐱' : '🐰'}
+                    {item.added_by === 'share' ? '🐱🐰' : '🐰'}
                   </div>
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -193,7 +193,7 @@ export default function Cart() {
 
       {/* ═══ Payer ═══ */}
       <div className="glass-card" style={{ padding: 14, marginBottom: 10 }}>
-        <p className="t-h3" style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 10 }}>谁来买单？</p>
+        <p className="t-h3" style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 10 }}>记到谁头上？</p>
         <div style={{ display: 'flex', gap: 8 }}>
           {PAYER_OPTIONS.map(opt => (
             <motion.button
@@ -245,7 +245,7 @@ export default function Cart() {
           background: 'rgba(255,107,53,0.06)',
         }}>
           <span style={{ fontSize: 12 }}>⏱️</span>
-          <span className="t-caption">预估等待约 20-30 分钟</span>
+          <span className="t-caption">大厨已经在磨刀啦~ 预计 20-30 分钟</span>
         </div>
         <motion.button
           whileTap={{ scale: 0.97 }}
@@ -269,7 +269,7 @@ export default function Cart() {
               animation: 'pulse-glow 2s ease-in-out infinite',
             }} />
           </div>
-          <span style={{ position: 'relative' }}>下单啦~</span>
+          <span style={{ position: 'relative' }}>下单给大厨~</span>
         </motion.button>
       </div>
     </div>

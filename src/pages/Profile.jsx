@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
 const MENU_ITEMS = [
-  { label: '我的收藏', emoji: '⭐', path: '/favorites' },
+  { label: '喜欢的菜', emoji: '⭐', path: '/favorites' },
   { label: '管理后台', emoji: '⚙️', path: '/admin' },
   { label: '设置', emoji: '🔧', path: '#' },
   { label: '关于', emoji: '💡', path: '#' },

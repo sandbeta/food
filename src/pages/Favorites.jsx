@@ -18,7 +18,7 @@ export default function Favorites() {
   return (
     <div className="page-container-tight">
       <div style={{ marginBottom: 14 }}>
-        <h1 className="t-h1" style={{ fontFamily: 'var(--font-display)' }}>我的收藏</h1>
+        <h1 className="t-h1" style={{ fontFamily: 'var(--font-display)' }}>喜欢的菜</h1>
         <p className="t-caption">{favorites.length} 道喜欢的菜</p>
       </div>
 
